@@ -154,3 +154,5 @@ running_logs/
 
 # vscode
 .vscode
+
+key_set.sh
