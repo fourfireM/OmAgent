@@ -29,20 +29,21 @@ class ThoughtGenerator(BaseWorker, BaseLLMBackend):
 Input: 4 4 6 8
 Output: {
     "llm_response": ["4 * 4 = 16 (left: 6 8 16)", "4 / 4 = 1 (left: 6 8 1)", "4 + 4 = 8 (left: 6 8 8)", "4 - 4 = 0 (left: 6 8 0)", "6 * 4 = 24 (left: 4 4 24)", "6 / 4 = 1.5 (left: 4 4 1.5)", "6 + 4 = 10 (left: 4 4 10)", "6 - 4 = 2 (left: 4 4 2)", "8 * 4 = 32 (left: 4 4 32)", "8 / 4 = 2 (left: 4 4 2)", "8 + 4 = 12 (left: 4 4 12)", "8 - 4 = 4 (left: 4 4 4)"],
-    "next_input": ["6 8 16", "6 8 1", "6 8 8", "6 8 0", "4 4 24", "4 4 1.5", "4 4 10", "4 4 2", "4 4 32", "4 4 2", "4 4 12", "4 4 4"],
+    "next_step_input": ["6 8 16", "6 8 1", "6 8 8", "6 8 0", "4 4 24", "4 4 1.5", "4 4 10", "4 4 2", "4 4 32", "4 4 2", "4 4 12", "4 4 4"],
 }
 
 2.
 Input: 2 8 8 14
 Output: {
     "llm_response": ["2 + 8 = 10 (left: 8 10 14)", "2 - 8 = -6 (left: 8 -6 14)", "2 * 8 = 16 (left: 8 10 16)", "2 / 8 = 0.25 (left: 8 10 0.25)", "8 + 8 = 16 (left: 2 8 16)", "8 - 8 = 0 (left: 2 8 0)", "8 * 8 = 64 (left: 2 8 64)", "8 / 8 = 1 (left: 2 8 1)", "14 + 2 = 16 (left: 8 8 16)", "14 - 2 = 12 (left: 8 8 12)", "14 * 2 = 28 (left: 8 8 28)", "14 / 2 = 7 (left: 8 8 7)"],
-    "next_input": ["8 10 14", "8 -6 14", "8 10 16", "8 10 0.25", "2 8 16", "2 8 0", "2 8 64", "2 8 1", "8 8 16", "8 8 12", "8 8 28", "8 8 7"],
+    "next_step_input": ["8 10 14", "8 -6 14", "8 10 16", "8 10 0.25", "2 8 16", "2 8 0", "2 8 64", "2 8 1", "8 8 16", "8 8 12", "8 8 28", "8 8 7"],
 }
 
+3.
 Input: 6 8 16
 Output: {
     "llm_response": ["6 + 8 = 14 (left: 16 14)", "6 - 8 = -2 (left: 16 -2)", "6 * 8 = 48 (left: 16 48)", "6 / 8 = 0.75 (left: 16 0.75)", "8 + 6 = 14 (left: 16 14)", "8 - 6 = 2 (left: 16 2)", "8 * 6 = 48 (left: 16 48)", "8 / 6 = 1.33 (left: 16 1.33)", "16 + 6 = 22 (left: 8 16)", "16 - 6 = 10 (left: 8 10)", "16 * 6 = 96 (left: 8 96)", "16 / 6 = 2.67 (left: 8 2.67)"],
-    "next_input": ["16 14", "16 -2", "16 48", "16 0.75", "8 14", "8 2", "8 48", "8 1.33", "8 16", "8 10", "8 96", "8 2.67"],
+    "next_step_input": ["16 14", "16 -2", "16 48", "16 0.75", "8 14", "8 2", "8 48", "8 1.33", "8 16", "8 10", "8 96", "8 2.67"],
 }
     """
     # prompts: List[PromptTemplate] = Field(default=[])
@@ -120,11 +121,15 @@ Output: {
                     )
 
                     if response.get('llm_response'):
-
                         for index, llm_response in enumerate(response['llm_response']):
-                            next_step_input = response.get('next_step_input', None)[index]
-                            value = response.get('value', "no_value")[index]
-                            thought_tree.add_node(content=llm_response, infer_input=next_step_input, parent_id=node.id, generation_value=value)
+                            next_step_input = response.get('next_step_input', None)
+                            if next_step_input is not None:
+                                next_step_input = next_step_input[index]
+
+                            value = response.get('value', None)
+                            if value is None:
+                                value = self.generation_value_dict['no_value']
+                            thought_tree.add_node(content=llm_response, next_step_input=next_step_input, parent_id=node.id, generation_value=value)
                             
         before_thought_tree = self.stm(self.workflow_instance_id)['thought_tree']
         self.stm(self.workflow_instance_id)['thought_tree'] = thought_tree

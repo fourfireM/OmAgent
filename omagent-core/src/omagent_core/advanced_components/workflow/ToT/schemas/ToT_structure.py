@@ -6,7 +6,7 @@ class ThoughtNode(BaseModel):
     id: int
     parent_id: Optional[int] = None
     content: Any
-    infer_input: Any
+    next_step_input: Any
     generation_value: float = 0.0
     evaluation_value: float = 0.0
     depth: int
@@ -16,7 +16,7 @@ class ThoughtTree(BaseModel):
     nodes: Dict[int, ThoughtNode] = Field(default_factory=dict)
     next_id: int = 0
 
-    def add_node(self, content: Any, infer_input: Any, parent_id: Optional[int] = None, evaluation_value: float = 0.0, generation_value: float = 0.0) -> ThoughtNode:
+    def add_node(self, content: Any, next_step_input: Any, parent_id: Optional[int] = None, evaluation_value: float = 0.0, generation_value: float = 0.0) -> ThoughtNode:
         """添加思维节点到树中"""
         # 计算深度：如果有父节点，则深度为父节点深度+1；否则为0
         depth = 0
@@ -29,7 +29,7 @@ class ThoughtTree(BaseModel):
             id=self.next_id,
             parent_id=parent_id,
             content=content,
-            infer_input=infer_input,
+            next_step_input=next_step_input,
             depth=depth,
             evaluation_value=evaluation_value,
             generation_value=generation_value
@@ -105,7 +105,6 @@ class ThoughtTree(BaseModel):
     def get_current_path(self, node_id: int, return_ids: bool = False):
         result = []
         
-
         node = self.nodes[node_id]
         while node:
             result.append(node)
@@ -115,7 +114,13 @@ class ThoughtTree(BaseModel):
             return [node.id for node in result]
         return result
         
-        
+    def get_current_path_contents(self, node_id: int):
+        """获取指定节点的当前路径的节点内容"""
+        current_path = self.get_current_path(node_id)
+        contents = ""
+        for node in current_path:
+            contents += f"{node.content}\n"
+        return contents
 
 
 
