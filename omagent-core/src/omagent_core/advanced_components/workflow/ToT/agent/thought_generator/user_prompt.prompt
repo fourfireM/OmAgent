@@ -1,9 +1,10 @@
 Now, it's your turn to complete the task.
+You should first understand the task, and then propose the next one step based on the previous steps.
 
 Task (The whole task you need to complete):
 {{task}}
 
-Input (The original input of the task or the previous steps to complete the task):
+Input (The original input of the task or the previous steps you have completed):
 {{input}}
 
-Output (The output of the current step):
+Output:

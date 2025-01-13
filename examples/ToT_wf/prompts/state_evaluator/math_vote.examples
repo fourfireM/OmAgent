@@ -1,0 +1,78 @@
+1. 
+Input: 
+Choice 1: 
+Question 1: Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?
+Question 1.1: How many slices do the large pizzas have?
+Answer 1.1: He buys 2 large pizzas, so he has 2 * 16 = 32 slices. The answer is 32.
+
+Choice 2: 
+Question 1: Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?
+Question 1.2: How many slices do the small pizzas have?
+Answer 1.2: He buys 2 small pizzas, so he has 2 * 8 = 16 slices. The answer is 16.
+
+Choice 3: 
+Question 1: Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?
+Question 1.1: How many slices do the pizzas have?
+Answer 1.1: He buys 4 pizzas, so he has 4 * 8 = 32 slices. The answer is 32.
+
+Output: 
+{
+    "llm_response": "Choice 1 is the optimal path, because the choice 2 is not follow the sequence of the question, it shoud be question 1.1 first and then 1.2, and the choice 3 does not decompose the question",
+    "choice": 1
+}
+
+2. 
+Input: 
+Choice 1: 
+Question 1: Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?
+Question 1.1: How many slices do the large pizzas have?
+Answer 1.1: He buys 2 large pizzas, so he has 2 * 16 = 32 slices. The answer is 32.
+Question 1.2: How many slices do the small pizzas have?
+Answer 1.2: He buys 2 small pizzas, so he has 2 * 16 = 32 slices. The answer is 32.
+
+Choice 2: 
+Question 1: Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?
+Question 1.1: How many slices do the large pizzas have?
+Answer 1.1: He buys 2 large pizzas, so he has 2 * 16 = 32 slices. The answer is 32.
+Question 1.2: How many slices do the small pizzas have?
+Answer 1.2: He buys 2 small pizzas, so he has 2 * 8 = 16 slices. The answer is 16.
+
+Choice 3: 
+Question 1: Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?
+Question 1.2: How many slices do the large pizzas have?
+Answer 1.2: He buys 2 large pizzas, so he has 2 * 16 = 32 slices. The answer is 32.
+Question 1.3: How many slices do the small pizzas have?
+Answer 1.3: He buys 2 small pizzas, so he has 2 * 8 = 16 slices. The answer is 16.
+
+Output: 
+{
+    "llm_response": "Choice 2 is the optimal choice because it is the most detailed and accurate decomposition of the original question, the choice 1 get wrong calculation for the small pizzas slices, and the choice 3 not follow the sequence of the question it should be question1.1 first and then 1.2.",
+    "choice": 2
+}
+
+3. 
+Input: 
+Choice 1: 
+Question 1: Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?
+Question 1.1: How many slices do the large pizzas have?
+Answer 1.1: He buys 2 large pizzas, so he has 2 * 16 = 32 slices. The answer is 32.
+Question 1.2: How many slices do the small pizzas have?
+Answer 1.2: He buys 2 small pizzas, so he has 2 * 8 = 16 slices. The answer is 16.
+Question 1.3: How many pieces does he eat that day?
+Answer 1.3: Now we can answer the question: There are 32 slices from the large pizzas and 16 slices from the small pizzas, so he eats 32 + 16 = 48 pieces that day. The answer is 48.
+
+Choice 2: 
+Question 1: Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?
+Question 1.1: How many slices do the large pizzas have?
+Answer 1.1: He buys 2 large pizzas, so he has 2 * 16 = 32 slices. The answer is 32.
+Question 1.2: How many slices do the small pizzas have?
+Answer 1.2: He buys 2 small pizzas, so he has 2 * 8 = 16 slices. The answer is 16.
+Question 1.3: How many pieces does he eat that day?
+Answer 1.3: There are 32 slices from the large pizzas and 16 slices from the small pizzas, so he eats 32 + 16 = 48 pieces that day. The answer is 48.
+
+
+Output: 
+{
+    "llm_response": "Choice 1 is the optimal choice because it is the most detailed and accurate decomposition of the original question. The choice 2 is correct but it is not anwer the question following the format required in task, when the question is answerable, it should start with 'Now we can answer the question: '.",
+    "choice": 1
+}

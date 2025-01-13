@@ -159,7 +159,7 @@ video_cache/
 # examples/ToT/
 # examples/ToT_wf/
 # omagent-core/src/omagent_core/advanced_components/workflow/ToT/
-# test_record/
+test_record/
 
 
 examples/Fitness_Instructor/

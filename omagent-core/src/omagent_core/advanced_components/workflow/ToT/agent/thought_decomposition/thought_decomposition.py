@@ -1,11 +1,6 @@
-from pathlib import Path
-from typing import List
-import json
 from omagent_core.advanced_components.workflow.ToT.schemas.ToT_structure import ThoughtTree
-
 from omagent_core.utils.registry import registry
 from omagent_core.engine.worker.base import BaseWorker
-
 
 @registry.register_worker()
 class ThoughtDecomposition(BaseWorker):
@@ -24,26 +19,28 @@ class ThoughtDecomposition(BaseWorker):
             self.stm(self.workflow_instance_id)['task'] = task
             self.stm(self.workflow_instance_id)['thought_tree'] = thought_tree
             self.stm(self.workflow_instance_id)['current_depth'] = 0
+            self.stm(self.workflow_instance_id)['current_step'] = 0
             self.stm(self.workflow_instance_id)['current_node_id'] = 0
             self.stm(self.workflow_instance_id)['search_type'] = self.params['search_type']
+            self.stm(self.workflow_instance_id)['dfs_best'] = {"id": 0, "score": 0} 
             self.stm(self.workflow_instance_id)['max_depth'] = self.params['max_depth']
             self.stm(self.workflow_instance_id)['max_steps'] = self.params['max_steps']
-
-        # print('-----'*10+'tot_decompose'+'-----'*10)
-        # print(f'thought_tree: {self.stm(self.workflow_instance_id)["thought_tree"]}')
-        # print(f'current_depth: {self.stm(self.workflow_instance_id)["current_depth"]}')
-        # print(f'current_node_id: {self.stm(self.workflow_instance_id)["current_node_id"]}')
-        # print(f'max_depth: {self.stm(self.workflow_instance_id)["max_depth"]}')
-        # print(f'max_steps: {self.stm(self.workflow_instance_id)["max_steps"]}')
-        # print('-----'*10+'tot_decompose'+'-----'*10)
-        message = ''
-        for key, value in self.params.items():
-            message += f'{key}: {value}\n'
-        self.callback.info(
-            agent_id=self.workflow_instance_id,
-            progress=f"Thought Decomposition",
-            message='\n'+message,
-        )
+            self.stm(self.workflow_instance_id)['b'] = self.params['b']
+        
+        tree_log = {}
+        tree_log["0"] = {
+            "thought_tree": self.stm(self.workflow_instance_id)['thought_tree'].thought_tree_to_dict(),
+        }
+        self.stm(self.workflow_instance_id)['tree_log'] = tree_log
+        
+        # message = ''
+        # for key, value in self.params.items():
+        #     message += f'{key}: {value}\n'
+        # self.callback.info(
+        #     agent_id=self.workflow_instance_id,
+        #     progress=f"Thought Decomposition",
+        #     message='\n'+message,
+        # )
 
 
 

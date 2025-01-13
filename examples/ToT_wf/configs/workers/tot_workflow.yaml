@@ -1,31 +1,34 @@
 - name: ThoughtDecomposition
   params:
     method: human
-    max_depth: 3
-    max_steps: 10
+    max_depth: 1
+    max_steps: 6
     search_type: bfs
+    b: 1
 - name: ThoughtGenerator
   llm: ${sub|json_res}
   params:
-    generation_n: 1
-  # use_default_prompt: true
+    generation_n: 3
   # prompts:
   #   - role: system
-  #     template: examples/ToT_wf/agent/prompt_test/test.prompt
+  #     template: examples/ToT_wf/prompts/thought_generator/sys_prompt.prompt
   #   - role: user
-  #     template: examples/ToT_wf/agent/prompt_test/test.prompt
-  prompt_elements:
-    examples: 
-    user: sample_user.prompt
+  #     template: examples/ToT_wf/prompts/thought_generator/user_prompt.prompt
 - name: StateEvaluator
   llm: ${sub|json_res}
   params:
-    evaluation_n: 1
+    evaluation_n: 3
     evaluation_type: vote
+  # prompts:
+  #   - role: system
+  #     template: examples/ToT_wf/prompts/state_evaluator/sys_prompt.prompt
+  #   - role: user
+  #     template: examples/ToT_wf/prompts/state_evaluator/user_prompt.prompt
 - name: SearchAlgorithm
-  llm: ${sub|gpt}
-  params:
-    b: 3
-    prune: true
-
-  
+  llm: ${sub|json_res}
+  use_llm_completion: true
+  prompts:
+    - role: system
+      template: examples/ToT_wf/prompts/search_algorithm/sys_prompt.prompt
+    - role: user
+      template: examples/ToT_wf/prompts/search_algorithm/user_prompt.prompt

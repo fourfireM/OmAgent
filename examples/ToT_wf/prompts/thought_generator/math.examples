@@ -1,0 +1,55 @@
+Q1.step1 
+Input: 
+Question 1: Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?
+Output: {
+    "llm_response": [
+        "Question 1.1: How many slices do the large pizzas have?\nAnswer 1.1: He buys 2 large pizzas, so he has 2 * 16 = 32 slices. The answer is 32.",
+    ]
+}
+
+Q1.step2 
+Input: 
+Question 1: Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?
+Question 1.1: How many slices do the large pizzas have?
+Answer 1.1: He buys 2 large pizzas, so he has 2 * 16 = 32 slices. The answer is 32.
+
+Output: {
+    "llm_response": [
+        "Question 1.2: How many slices do the small pizzas have?\nAnswer 1.2: He buys 2 small pizzas, so he has 2 * 8 = 16 slices. The answer is 16.",
+    ]
+}
+
+Q1.step3 
+Input: 
+Question 1: Albert is wondering how much pizza he can eat in one day. He buys 2 large pizzas and 2 small pizzas. A large pizza has 16 slices and a small pizza has 8 slices. If he eats it all, how many pieces does he eat that day?
+Question 1.1: How many slices do the large pizzas have?
+Answer 1.1: He buys 2 large pizzas, so he has 2 * 16 = 32 slices. The answer is 32.
+Question 1.2: How many slices do the small pizzas have?
+Answer 1.2: He buys 2 small pizzas, so he has 2 * 8 = 16 slices. The answer is 16.
+
+Output: {
+    "llm_response": [
+        "Question 1.3: Now we can answer the question: How many pieces does he eat that day?\nAnswer 1.3: There are 32 slices from the large pizzas and 16 slices from the small pizzas, so he eats 32 + 16 = 48 pieces that day. The answer is 48.",
+    ]
+}
+
+Q2.step1 
+Input: 
+Question 2: Weng earns $12 an hour for babysitting. Yesterday, she just did 50 minutes of babysitting. How much did she earn?
+
+Output: {
+    "llm_response": [
+        "Question 2.1: How much does Weng earn per minute?\nAnswer 2.1: Since Weng earns $12 an hour for babysitting, she earns $12 / 60 = $0.2 per minute. The answer is 0.2.",
+    ]
+}
+
+Q2.step2 
+Input: 
+Question 2: Weng earns $12 an hour for babysitting. Yesterday, she just did 50 minutes of babysitting. How much did she earn?
+Question 2.1: How much does Weng earn per minute?
+Answer 2.1: Since Weng earns $12 an hour for babysitting, she earns $12 / 60 = $0.2 per minute. The answer is 0.2.
+Output: {
+    "llm_response": [
+        "Question 2.2: Now we can answer the question: How much did she earn?\nAnswer 2.2: Working 50 minutes, she earned $0.2 x 50 = $10. The answer is 10.",
+    ]
+}

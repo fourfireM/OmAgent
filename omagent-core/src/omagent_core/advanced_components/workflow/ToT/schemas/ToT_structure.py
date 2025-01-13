@@ -7,8 +7,7 @@ class ThoughtNode(BaseModel):
     parent_id: Optional[int] = None
     content: Any
     next_step_input: Any
-    generation_value: float = 0.0
-    evaluation_value: float = 0.0
+    value: float = 0.0
     depth: int
     children: List[int] = Field(default_factory=list)
 
@@ -16,7 +15,7 @@ class ThoughtTree(BaseModel):
     nodes: Dict[int, ThoughtNode] = Field(default_factory=dict)
     next_id: int = 0
 
-    def add_node(self, content: Any, next_step_input: Any, parent_id: Optional[int] = None, evaluation_value: float = 0.0, generation_value: float = 0.0) -> ThoughtNode:
+    def add_node(self, content: Any, next_step_input: Any, parent_id: Optional[int] = None, value: float = 0.0) -> ThoughtNode:
         """添加思维节点到树中"""
         # 计算深度：如果有父节点，则深度为父节点深度+1；否则为0
         depth = 0
@@ -31,8 +30,7 @@ class ThoughtTree(BaseModel):
             content=content,
             next_step_input=next_step_input,
             depth=depth,
-            evaluation_value=evaluation_value,
-            generation_value=generation_value
+            value=value
         )
         self.nodes[node.id] = node
         if parent_id is not None:
@@ -76,11 +74,10 @@ class ThoughtTree(BaseModel):
             # 删除当前节点
             del self.nodes[node_id]
                 
-    def get_top_n_score_nodes(self, node_id: int = None, depth: int = None, sort_region: str = 'children', score_type: str = 'evaluation', n: int = 1, return_ids: bool = False):
+    def get_top_n_score_nodes(self, node_id: int = None, depth: int = None, sort_region: str = 'children', n: int = 1, return_ids: bool = False):
         """
         返回指定深度或节点的子节点中最高分数的前n个节点或其ID。
         sort_region: 'children' or 'depth'
-        score_type: 'evaluation' or 'generation'
         """
         if sort_region == 'children':
             nodes = self.get_childrens(node_id)
@@ -89,16 +86,11 @@ class ThoughtTree(BaseModel):
         else:
             raise ValueError("Invalid sort_region. It must be 'children' or 'depth'.")
         
-        if score_type == 'evaluation':
-            key = lambda node: node.evaluation_value
-        elif score_type == 'generation':
-            key = lambda node: node.generation_value
-        else:
-            raise ValueError("Invalid score_type. It must be 'evaluation' or 'generation'.")
+        key = lambda node: node.value
         
         top_n_score_nodes = sorted(nodes, key=key, reverse=True)[:n]
         
-        if return_ids:
+        if return_ids: 
             return [node.id for node in top_n_score_nodes]
         return top_n_score_nodes
                 
@@ -122,7 +114,13 @@ class ThoughtTree(BaseModel):
             contents += f"{node.content}\n"
         return contents
 
-
+    def get_current_path_score(self, node_id: int):
+        """获取指定节点的当前路径的节点分数"""
+        current_path = self.get_current_path(node_id)
+        score = 0
+        for node in current_path:
+            score += node.value
+        return score
 
 
 

@@ -4,24 +4,14 @@ from typing import List
 import json_repair
 from omagent_core.models.llms.base import BaseLLMBackend
 from omagent_core.utils.registry import registry
-from omagent_core.models.llms.schemas import Message, Content
-from omagent_core.utils.general import encode_image
-from omagent_core.models.llms.prompt.parser import StrParser
 from omagent_core.models.llms.openai_gpt import OpenaiGPTLLM
 from omagent_core.engine.worker.base import BaseWorker
-from omagent_core.utils.container import container
 from omagent_core.models.llms.prompt.prompt import PromptTemplate
 from pydantic import Field
 from typing import List
-import re
-
-
-# from .prompts import *
-# from .utils import *
 
 CURRENT_PATH = Path(__file__).parents[0]
     
-
 @registry.register_worker()
 class StateEvaluator(BaseWorker, BaseLLMBackend):
     llm: OpenaiGPTLLM
@@ -29,79 +19,117 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
     prompts: List[PromptTemplate] = Field([])
     
     value_dict: dict = {
-        "sure": 20,
-        "likely": 1,
-        "impossible": -1,
+        "sure": 3,
+        "likely": 0.5,
+        "impossible": -2,
     }
     
-    def _run(self, *args, **kwargs):
+    def _run(self, examples: str, *args, **kwargs):
         thought_tree = self.stm(self.workflow_instance_id)['thought_tree']
         current_depth = self.stm(self.workflow_instance_id)['current_depth']
         current_node_id = self.stm(self.workflow_instance_id)['current_node_id']
         
-        evaluator_parameters = self.stm(self.workflow_instance_id)['evaluator_parameters']
-        evaluation_n = evaluator_parameters['evaluation_n']
-        evaluation_type = evaluator_parameters['evaluation_type']
+        evaluation_n = self.params['evaluation_n']
+        evaluation_type = self.params['evaluation_type']
         
-        search_parameters = self.stm(self.workflow_instance_id)['search_parameters']
-        search_type = search_parameters['search_type']
-        
+        search_type = self.stm(self.workflow_instance_id)['search_type']
 
+        if not self.prompts:
+            self.prompts = [
+                PromptTemplate.from_file(
+                    CURRENT_PATH.joinpath(f"{evaluation_type}_sys.prompt"), role="system"
+                ),
+                PromptTemplate.from_file(
+                    CURRENT_PATH.joinpath(f"{evaluation_type}_user.prompt"), role="user"
+                ),
+            ]
+        
         if search_type == "bfs":
             current_nodes = thought_tree.get_nodes_at_depth(current_depth)
-            print('-'*100)
-            print(len(current_nodes))
-            print('-'*100)
         elif search_type == "dfs":
-            # current_nodes = thought_tree.get_childrens(current_node_id)
             current_nodes = [thought_tree.nodes[current_node_id]]
         else:
             raise ValueError(f"Invalid search type: {search_type}")
         
-        all_evaluation = []
+        # evaluation_log = []
         
         if evaluation_type == "value":
             for node in current_nodes:
                 evaluation_value = 0
                 for i in range(evaluation_n):
-                    response = self.simple_infer(input=node.infer_input)["choices"][0]["message"]["content"]
+                    if node.next_step_input:
+                        value_input = node.next_step_input
+                    else:
+                        value_input = thought_tree.get_current_path_contents(node.id)
+                        
+                    payload = {
+                        "examples": examples,
+                        "task": self.stm(self.workflow_instance_id)['task'],
+                        "input": value_input,
+                    }
+                    chat_complete_res = self.infer(input_list=[payload])
+                    response = chat_complete_res[0]["choices"][0]["message"].get("content")
+                    
+                    # self.callback.info(
+                    #     agent_id=self.workflow_instance_id,
+                    #     progress=f"State Evaluator-value",
+                    #     message=f"input: {value_input}\nresponse: {response}"
+                    # )
+                    
                     contents = json_repair.loads(response)
-                    all_evaluation.append({
-                        "input": node.infer_input,
-                        "value": contents['value'],
-                        "content": contents['llm_response']
-                    })
-                    evaluation_value += self.value_dict[contents['value']]
-                node.evaluation_value = evaluation_value
+                    # evaluation_log.append(contents)
+                    
+                    value = contents.get('value', None)
+                    evaluation_value += self.value_dict.get(value, 0.0)
+                node.value = evaluation_value
+                
+                
         elif evaluation_type == "vote":
             
             for i in range(evaluation_n):
                 choices = ""
                 index_to_node_id = {}
                 for index, node in enumerate(current_nodes):
-                    index_to_node_id[index] = node.id
-                    choices += f"Choice {index}: {node.infer_input}\n"
-                response = self.simple_infer(choices=choices)["choices"][0]["message"]["content"]
-                print('-'*100)
-                print(response)
-                print('-'*100)
+                    index_to_node_id[index+1] = node.id
+                    if node.next_step_input:
+                        choices += f"Choice {index+1}: \n{node.next_step_input}\n"
+                    else:
+                        next_step_input =  thought_tree.get_current_path_contents(node.id)
+                        choices += f"Choice {index+1}: \n{next_step_input}\n"
+                    
+                payload = {
+                    "examples": examples,
+                    "task": self.stm(self.workflow_instance_id)['task'],
+                    "choices": choices,
+                }
+                chat_complete_res = self.infer(input_list=[payload])
+                response = chat_complete_res[0]["choices"][0]["message"].get("content")
+                
+                # self.callback.info(
+                #     agent_id=self.workflow_instance_id,
+                #     progress=f"State Evaluator-vote",
+                #     message=f"choices: {choices}\nresponse: {response}"
+                # )
+                
                 vote_results = json_repair.loads(response)
+                
+                # evaluation_log.append(vote_results)
                 choice = vote_results['choice']
                 choice_id = index_to_node_id[choice]
-                thought_tree.nodes[choice_id].evaluation_value += 1
-                self.callback.info(
-                    agent_id=self.workflow_instance_id,
-                    progress=f"State Evaluator",
-                    message=response
-                )
+                thought_tree.nodes[choice_id].value += 1
+        else:
+            raise ValueError(f"Invalid evaluation type: {evaluation_type}")
 
         
         self.stm(self.workflow_instance_id)['thought_tree'] = thought_tree
         
+        # #=============================================================
+        # tree_log = self.stm(self.workflow_instance_id)['tree_log']
+        # current_depth_log = tree_log.get(current_depth, {})
+        # current_depth_log['evaluation_log'] = evaluation_log
+        # tree_log[current_depth] = current_depth_log
+        # self.stm(self.workflow_instance_id)['tree_log'] = tree_log
+        # #=============================================================
 
-        
-        print('-'*100)
-        print(all_evaluation)
-        print('-'*100)
 
 

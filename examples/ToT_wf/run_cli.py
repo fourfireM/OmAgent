@@ -10,7 +10,7 @@ from omagent_core.engine.workflow.task.set_variable_task import SetVariableTask
 from omagent_core.utils.logger import logging
 from omagent_core.engine.workflow.task.do_while_task import DoWhileTask
 
-from agent.input_interface.input_interface import InputInterface
+# from agent.input_interface.input_interface import InputInterface
 
 # Initialize logging
 logging.init_logger("omagent", "omagent", level="INFO")
@@ -28,12 +28,18 @@ container.from_config(CURRENT_PATH.joinpath('container.yaml'))
 
 
 # Initialize simple VQA workflow
-workflow = ConductorWorkflow(name='ToT_test')
+workflow = ConductorWorkflow(name='ToT_Workflow')
 
 tot_workflow = ToTWorkflow()
 tot_workflow.set_tot(
-    task = "Use numbers and basic arithmetic operations (+ - * /) to obtain 24. Each step, you are only allowed to choose two of the remaining numbers to obtain a new number.\nNow your task is to generate the next thought based on the input content.",
-    query = "7 8 3 1"
+    task = "Given a question, please decompose it into sub-questions. For each sub-question, please answer it in a complete sentence, ending with 'The answer is'. When the original question is answerable, please start the subquestion with 'Now we can answer the question: '. Remember each time only generate one next sub-question and answer.",
+    thought_generator_examples_file_path=CURRENT_PATH.joinpath('prompts/thought_generator/math.examples'),
+    state_evaluator_examples_file_path=CURRENT_PATH.joinpath('prompts/state_evaluator/math_vote.examples')
+)
+
+tot_workflow.set_input(
+    query = "Tina makes $18.00 an hour. If she works more than 8 hours per shift, she is eligible for overtime, which is paid by your hourly wage + 1/2 your hourly wage. If she works 10 hours every day for 5 days, how much money does she make?",
+    id = "test_1"
 )
 
 
@@ -52,5 +58,5 @@ workflow.register(True)
 
 # Initialize and start CLI client with workflow configuration
 config_path = CURRENT_PATH.joinpath('configs')
-cli_client = DefaultClient(interactor=workflow, config_path=config_path, workers=[InputInterface()])
+cli_client = DefaultClient(interactor=workflow, config_path=config_path, workers=[])
 cli_client.start_interactor()
