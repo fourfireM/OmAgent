@@ -23,9 +23,9 @@ class ToTWorkflow(ConductorWorkflow):
             self.state_evaluator_examples = None
 
         
-    def set_input(self, query: str, id: str):
+    def set_input(self, query: str, qid: str):
         self.query = query
-        self.id = id
+        self.qid = qid
         self._configure_tasks()
         self._configure_workflow()
         
@@ -41,6 +41,7 @@ class ToTWorkflow(ConductorWorkflow):
             task_def_name=ThoughtDecomposition,
             task_reference_name="thought_decomposition",
             inputs={
+                "qid": self.qid,
                 "query": self.query,
                 "task": self.task,
             }

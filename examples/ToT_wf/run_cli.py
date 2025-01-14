@@ -38,8 +38,8 @@ tot_workflow.set_tot(
 )
 
 tot_workflow.set_input(
-    query = "Tina makes $18.00 an hour. If she works more than 8 hours per shift, she is eligible for overtime, which is paid by your hourly wage + 1/2 your hourly wage. If she works 10 hours every day for 5 days, how much money does she make?",
-    id = "test_1"
+    query = "There are 15 trees in the grove. Grove workers will plant trees in the grove today. After they are done, there will be 21 trees. How many trees did the grove workers plant today?",
+    qid = "test_1"
 )
 
 

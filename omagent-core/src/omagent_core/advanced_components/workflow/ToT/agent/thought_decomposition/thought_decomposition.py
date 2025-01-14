@@ -11,8 +11,8 @@ class ThoughtDecomposition(BaseWorker):
     
     """
     
-    def _run(self, task: str, query: str):
-        # print(self.params)
+    def _run(self, qid: str, task: str, query: str):
+        print(self.params)
         if self.stm(self.workflow_instance_id).get('thought_tree', None) is None:
             thought_tree = ThoughtTree()
             thought_tree.add_node(content=query, next_step_input=query, parent_id=None)
@@ -26,12 +26,32 @@ class ThoughtDecomposition(BaseWorker):
             self.stm(self.workflow_instance_id)['max_depth'] = self.params['max_depth']
             self.stm(self.workflow_instance_id)['max_steps'] = self.params['max_steps']
             self.stm(self.workflow_instance_id)['b'] = self.params['b']
-        
-        tree_log = {}
-        tree_log["0"] = {
-            "thought_tree": self.stm(self.workflow_instance_id)['thought_tree'].thought_tree_to_dict(),
+            
+        record = {
+            "qid": qid,
+            "question": query,
+            "last_output": None,
+            "prompt_token": 0,
+            "completion_token": 0,
         }
-        self.stm(self.workflow_instance_id)['tree_log'] = tree_log
+        self.stm(self.workflow_instance_id)['record'] = record
+
+        if self.save_state:
+            self.save_state()
+            
+    def save_state(self):
+        
+        pass
+    
+        
+        # print(self.stm(self.workflow_instance_id)['record'])
+        # print("--------------------------------")
+        
+        # tree_log = {}
+        # tree_log["0"] = {
+        #     "thought_tree": self.stm(self.workflow_instance_id)['thought_tree'].thought_tree_to_dict(),
+        # }
+        # self.stm(self.workflow_instance_id)['tree_log'] = tree_log
         
         # message = ''
         # for key, value in self.params.items():

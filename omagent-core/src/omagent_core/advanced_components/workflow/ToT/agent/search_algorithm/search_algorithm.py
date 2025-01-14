@@ -41,6 +41,11 @@ class SearchAlgorithm(BaseWorker, BaseLLMBackend):
         #     message=f"thought_tree: {thought_tree}\n"
         # )
         
+        # for batch test
+        record = self.stm(self.workflow_instance_id)['record']
+        prompt_token = record['prompt_token']
+        completion_token = record['completion_token']
+        
         
         if search_type == "bfs":
             b = self.stm(self.workflow_instance_id).get('b', None)
@@ -72,11 +77,11 @@ class SearchAlgorithm(BaseWorker, BaseLLMBackend):
         else:
             raise ValueError(f"Search type {search_type} is not supported")
         
-        self.callback.info(
-            agent_id=self.workflow_instance_id,
-            progress=f"Search Algorithm",
-            message=f"thought_tree_after_prune: {thought_tree}\n"
-        )
+        # self.callback.info(
+        #     agent_id=self.workflow_instance_id,
+        #     progress=f"Search Algorithm",
+        #     message=f"thought_tree_after_prune: {thought_tree}\n"
+        # )
         
         self.stm(self.workflow_instance_id)['thought_tree'] = thought_tree
         self.stm(self.workflow_instance_id)['current_node_id'] = current_node_id
@@ -95,20 +100,11 @@ class SearchAlgorithm(BaseWorker, BaseLLMBackend):
         # )
 
         
-        # print('-----'*10+'search_algorithm'+'-----'*10)
-        # print(f'thought_tree: {thought_tree}')
-        # print(f'current_node_id: {current_node_id}')
-        # print(f'current_depth: {current_depth}')
-        # print(f'max_depth: {max_depth}')
-        # print(f'current_step: {current_step}')
-        # print(f'max_steps: {max_steps}')
-        # print('-----'*10+'search_algorithm'+'-----'*10)
-        
         current_best_contents = thought_tree.get_current_path_contents(node_id=best_node_id)
         # self.callback.info(
         #     agent_id=self.workflow_instance_id,
-        #     progress=f"Search Algorithm",
-        #     message=f'current_best_contents: {current_best_contents}\n '
+        #     progress=f"Search Algorithm-completion",
+        #     message=f'record: {record}\n '
         # )
         
         if self.use_llm_completion:
@@ -121,31 +117,61 @@ class SearchAlgorithm(BaseWorker, BaseLLMBackend):
             
             response = json_repair.loads(response)
             
-            # # ========================================================================
+            # ========================================================================
+            
+            # for batch test
+            if "usage" in chat_complete_res[0]:
+                prompt_token += chat_complete_res[0]["usage"]["prompt_tokens"]
+                completion_token += chat_complete_res[0]["usage"]["completion_tokens"]
+            
+            # for batch test
+            record['prompt_token'] = prompt_token
+            record['completion_token'] = completion_token
+            
+            self.stm(self.workflow_instance_id)['record'] = record
+            
             
             # tree_log[current_depth]['completion'] = response
             
             # self.stm(self.workflow_instance_id)['tree_log'] = tree_log
-            # # Convert the tree log to a JSON string
-            # tree_log_json = json.dumps(self.stm(self.workflow_instance_id)['tree_log'], indent=4)
+            # Convert the tree log to a JSON string
 
-            # # Save the JSON string to a file
-            # with open("/data9/myb/OmAgent-myb/OmAgent/test_record/ToT/math_loop/Tina.json", "w") as file:
-            #     file.write(tree_log_json)
                 
-            # # ========================================================================
+            # ========================================================================
             
             # self.callback.info(
             #     agent_id=self.workflow_instance_id,
-            #     progress=f"Search Algorithm",
+            #     progress=f"Search Algorithm-completion",
             #     message=f'response: {response}\n '
             # )
         
             if response.get('completion', None) == "yes":
-                return {"finish": True, "result": current_best_contents}
+                # for batch test
+                record = self.stm(self.workflow_instance_id)['record']
+                record['last_output'] = current_best_contents
+                
+                # tree_log = self.stm(self.workflow_instance_id)['tree_log']
+                # tree_log['record'] = record
+                # qid = record['qid']
+                
+                # tree_log_json = json.dumps(tree_log, indent=4)
+
+                # Save the JSON string to a file
+                # file_name = f"/data9/myb/OmAgent-myb/OmAgent/omagent-test-data/GSM8K/tree_log/{qid}.json"
+                # with open(file_name, "w") as file:
+                #     file.write(tree_log_json)
+                
+                # self.callback.info(
+                #     agent_id=self.workflow_instance_id,
+                #     progress=f"Search Algorithm-completion",
+                #     message=f'record: {record}\n '
+                # )
+                return {"finish": True, "result": record}
         
         if current_depth >= max_depth or current_step >= max_steps:
-            return {"finish": True, "result": current_best_contents}
+            record = self.stm(self.workflow_instance_id)['record']
+            record['last_output'] = current_best_contents   
+            return {"finish": True, "result": record}
         else:
             return {"finish": False}
                 

@@ -35,7 +35,15 @@ class ThoughtGenerator(BaseWorker, BaseLLMBackend):
         search_type = self.stm(self.workflow_instance_id)['search_type']
         generation_n = self.params['generation_n']
         
-        # generation_log = []
+        
+        # for batch test
+        generation_log = []
+        record = self.stm(self.workflow_instance_id)['record']
+        prompt_token = record['prompt_token']
+        completion_token = record['completion_token']
+        # print('--------------------------------')
+        # print(record)
+        #----------------------------------------
 
         do_generate = True
         if search_type == "bfs":
@@ -68,6 +76,11 @@ class ThoughtGenerator(BaseWorker, BaseLLMBackend):
                     chat_complete_res = self.infer(input_list=[payload])
                     response = chat_complete_res[0]["choices"][0]["message"].get("content")
                     response = json_repair.loads(response)
+                    
+                    # for batch test
+                    if "usage" in chat_complete_res[0]:
+                        prompt_token += chat_complete_res[0]["usage"]["prompt_tokens"]
+                        completion_token += chat_complete_res[0]["usage"]["completion_tokens"]
 
                     # self.callback.info(
                     #     agent_id=self.workflow_instance_id,
@@ -75,9 +88,11 @@ class ThoughtGenerator(BaseWorker, BaseLLMBackend):
                     #     message=f'response: {response}'
                     # )
                     
-                    # generation_log.append(response)
+                    generation_log.append(response)
                     
                     if response.get('llm_response'):
+                        if not isinstance(response['llm_response'], list):
+                            response['llm_response'] = [response['llm_response']]
                         for index, llm_response in enumerate(response['llm_response']):
                             next_step_input = response.get('next_step_input', None)
                             if next_step_input and index < len(next_step_input) and isinstance(next_step_input, list):
@@ -87,9 +102,6 @@ class ThoughtGenerator(BaseWorker, BaseLLMBackend):
         
         if search_type == "dfs":
             self.stm(self.workflow_instance_id)['current_node_id'] = thought_tree.nodes[current_node_id].children[0]
-        # before_thought_tree = self.stm(self.workflow_instance_id)['thought_tree']
-        # before_current_node_id = self.stm(self.workflow_instance_id)['current_node_id']
-        # before_current_step = self.stm(self.workflow_instance_id)['current_step']
         
         self.stm(self.workflow_instance_id)['thought_tree'] = thought_tree
         self.stm(self.workflow_instance_id)['current_depth'] = current_depth + 1
@@ -97,6 +109,13 @@ class ThoughtGenerator(BaseWorker, BaseLLMBackend):
         self.stm(self.workflow_instance_id)['current_step'] = current_step + 1
         
         # #=============================================================
+        
+        # for batch test
+        record['prompt_token'] = prompt_token
+        record['completion_token'] = completion_token
+        
+        self.stm(self.workflow_instance_id)['record'] = record
+        
         # tree_log = self.stm(self.workflow_instance_id)['tree_log']
         # current_depth_log = tree_log.get(current_depth+1, {})
         # current_depth_log['generation_log'] = generation_log
@@ -104,19 +123,7 @@ class ThoughtGenerator(BaseWorker, BaseLLMBackend):
         # tree_log[current_depth+1] = current_depth_log
         # self.stm(self.workflow_instance_id)['tree_log'] = tree_log
         # #=============================================================
-        
-        
-        # print('--show--stm--'*20)
-        # print(f'before thought_tree: {before_thought_tree.nodes}')
-        # print(f'before current_depth: {current_depth}')
-        # print(f'before current_node_id: {before_current_node_id}')
-        # print(f'before current_step: {current_step}')
-        # print('--------------'*20)
-        # print(f'after thought_tree: {self.stm(self.workflow_instance_id)["thought_tree"].nodes}')
-        # print(f'after current_depth: {self.stm(self.workflow_instance_id)["current_depth"]}')
-        # print(f'after current_node_id: {self.stm(self.workflow_instance_id)["current_node_id"]}')
-        # print(f'after current_step: {self.stm(self.workflow_instance_id)["current_step"]}')
-        # print('--show--stm--'*20)
+
         
         
 

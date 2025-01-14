@@ -51,7 +51,13 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
         else:
             raise ValueError(f"Invalid search type: {search_type}")
         
-        # evaluation_log = []
+        #----------------------------------------
+        
+        # for batch test
+        record = self.stm(self.workflow_instance_id)['record']
+        prompt_token = record['prompt_token']
+        completion_token = record['completion_token']
+        evaluation_log = []
         
         if evaluation_type == "value":
             for node in current_nodes:
@@ -70,6 +76,11 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
                     chat_complete_res = self.infer(input_list=[payload])
                     response = chat_complete_res[0]["choices"][0]["message"].get("content")
                     
+                    # for batch test
+                    if "usage" in chat_complete_res[0]:
+                        prompt_token += chat_complete_res[0]["usage"]["prompt_tokens"]
+                        completion_token += chat_complete_res[0]["usage"]["completion_tokens"]
+                    
                     # self.callback.info(
                     #     agent_id=self.workflow_instance_id,
                     #     progress=f"State Evaluator-value",
@@ -77,7 +88,9 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
                     # )
                     
                     contents = json_repair.loads(response)
-                    # evaluation_log.append(contents)
+                    
+                    #-----------------------------------
+                    evaluation_log.append(contents)
                     
                     value = contents.get('value', None)
                     evaluation_value += self.value_dict.get(value, 0.0)
@@ -105,15 +118,21 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
                 chat_complete_res = self.infer(input_list=[payload])
                 response = chat_complete_res[0]["choices"][0]["message"].get("content")
                 
+                
+                # for batch test
+                if "usage" in chat_complete_res[0]:
+                    prompt_token += chat_complete_res[0]["usage"]["prompt_tokens"]
+                    completion_token += chat_complete_res[0]["usage"]["completion_tokens"]
                 # self.callback.info(
                 #     agent_id=self.workflow_instance_id,
                 #     progress=f"State Evaluator-vote",
                 #     message=f"choices: {choices}\nresponse: {response}"
                 # )
                 
+                # -----------------------------------------------
                 vote_results = json_repair.loads(response)
                 
-                # evaluation_log.append(vote_results)
+                evaluation_log.append(vote_results)
                 choice = vote_results['choice']
                 choice_id = index_to_node_id[choice]
                 thought_tree.nodes[choice_id].value += 1
@@ -123,13 +142,20 @@ class StateEvaluator(BaseWorker, BaseLLMBackend):
         
         self.stm(self.workflow_instance_id)['thought_tree'] = thought_tree
         
-        # #=============================================================
+        #=============================================================
+        # for batch test
+        record['prompt_token'] = prompt_token
+        record['completion_token'] = completion_token
+        
+        self.stm(self.workflow_instance_id)['record'] = record
+        
+        
         # tree_log = self.stm(self.workflow_instance_id)['tree_log']
         # current_depth_log = tree_log.get(current_depth, {})
         # current_depth_log['evaluation_log'] = evaluation_log
         # tree_log[current_depth] = current_depth_log
         # self.stm(self.workflow_instance_id)['tree_log'] = tree_log
-        # #=============================================================
+        #=============================================================
 
 
 

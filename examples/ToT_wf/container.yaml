@@ -1,7 +1,7 @@
 conductor_config:
   name: Configuration
   base_url:
-    value: http://localhost:8080
+    value: http://140.207.201.41:8080
     description: The Conductor Server API endpoint
     env_var: CONDUCTOR_SERVER_URL
   auth_key:
@@ -24,7 +24,7 @@ connectors:
   redis_stream_client:
     name: RedisConnector
     host:
-      value: localhost
+      value: 140.207.201.41 
       env_var: HOST
     port:
       value: 6379
@@ -41,7 +41,7 @@ connectors:
   redis_stm_client:
     name: RedisConnector
     host:
-      value: localhost
+      value: 140.207.201.41 
       env_var: HOST
     port:
       value: 6379
@@ -56,29 +56,26 @@ connectors:
       value: 0
       env_var: DB
 components:
-  DefaultCallback:
-    name: DefaultCallback
-    bot_id:
-      value: ''
-      env_var: BOT_ID
-    start_time:
-      value: 2024-12-07_23:33:34
-      env_var: START_TIME
-    folder_name:
-      value: ./running_logs/2024-12-07_23:33:34
-      env_var: FOLDER_NAME
-  AppInput:
-    name: AppInput
   AppCallback:
     name: AppCallback
     bot_id:
       value: ''
       env_var: BOT_ID
     start_time:
-      value: 2024-12-07_23:33:34
+      value: 2025-01-13_17:07:49
       env_var: START_TIME
-    folder_name:
-      value: ./running_logs/2024-12-07_23:33:34
-      env_var: FOLDER_NAME
+  AppInput:
+    name: AppInput
+  DefaultCallback:
+    name: DefaultCallback
+    bot_id:
+      value: ''
+      env_var: BOT_ID
+    start_time:
+      value: 2025-01-13_17:07:49
+      env_var: START_TIME
+    incomplete_flag:
+      value: false
+      env_var: INCOMPLETE_FLAG
   RedisSTM:
     name: RedisSTM

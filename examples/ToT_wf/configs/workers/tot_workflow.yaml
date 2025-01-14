@@ -1,14 +1,15 @@
 - name: ThoughtDecomposition
+  save_state: false
   params:
     method: human
-    max_depth: 1
+    max_depth: 6
     max_steps: 6
     search_type: bfs
     b: 1
 - name: ThoughtGenerator
   llm: ${sub|json_res}
   params:
-    generation_n: 3
+    generation_n: 2
   # prompts:
   #   - role: system
   #     template: examples/ToT_wf/prompts/thought_generator/sys_prompt.prompt

@@ -1,0 +1,84 @@
+1. 
+Input: 
+Choice 1: 
+Question: There are 15 trees in the grove. Grove workers will plant trees in the grove today. After they are done, there will be 21 trees. How many trees did the grove workers plant today?
+sub-question 1: How many trees are there in the grove?
+Answer 1: There are 15 trees in the grove. The answer is 15.
+
+
+Choice 2: 
+Question: There are 15 trees in the grove. Grove workers will plant trees in the grove today. After they are done, there will be 21 trees. How many trees did the grove workers plant today?
+sub-question 1: Now we can answer the question: How many trees did the grove workers plant today?
+Answer 1: There are 15 trees originally. Then there were 21 trees after some more were planted. So there must have been 21 - 15 = 6. The answer is 6.
+
+Output: 
+{
+    "llm_response": "Choice 2 is better choice, because the original question is simple enough to answer directly, so we can answer it in the first subquestion and start with 'Now we can answer the question: '.",
+    "choice": 2
+}
+
+2. 
+Input: 
+Choice 1: 
+Question: Shawn has five toys. For Christmas, he got two toys each from his mom and dad. How many toys does he have now?
+sub-question 1: How many toys does Shawn have from his mom and dad?
+Answer 1: Shawn has 2 toys from his mom and 2 toys from his dad. 2 + 2 = 4. The answer is 4.
+
+Choice 2: 
+Question: Shawn has five toys. For Christmas, he got two toys each from his mom and dad. How many toys does he have now?
+sub-question 2: How many toys does Shawn have from his mom and dad?
+Answer 2: Shawn has 2 toys from his mom and 2 toys from his dad. 2 + 2 = 4. The answer is 4.
+
+
+Output: 
+{
+    "llm_response": "Choice 1 is better choice, because choice 2 does not follow the sequence of the question, it should be sub-question 1 first and then sub-question 2",
+    "choice": 1
+}
+
+3. 
+Input: 
+Choice 1: 
+Question: There were nine computers in the server room. Five more computers were installed each day, from monday to thursday. How many computers are now in the server room?
+sub-question 1: How many days are there from monday to thursday?
+Answer 1: There are 4 days from monday to thursday. The answer is 4.
+sub-question 2: How many computers were installed in total?
+Answer 2: There are 4 days and 5 computers were installed each day. 4 * 5 = 20. The answer is 20.
+sub-question 3: Now we can answer the question: How many computers are now in the server room?
+Answer 3: There were 9 computers originally and 20 more were installed. 9 + 20 = 29. The answer is 29.
+
+
+Choice 2:
+Question: There were nine computers in the server room. Five more computers were installed each day, from monday to thursday. How many computers are now in the server room?
+sub-question 1: How many days are there from monday to thursday?
+Answer 1: There are 4 days from monday to thursday. The answer is 4.
+sub-question 2: How many computers were installed in total?
+Answer 2: There are 4 days and 5 computers were installed each day. 4 * 5 = 20. The answer is 20.
+sub-question 3: How many computers are now in the server room?
+Answer 3: There were 9 computers originally and 20 more were installed. 9 + 20 = 29. The answer is 29.
+
+Output: 
+{
+    "llm_response": "Choice 1 is better choice, because choice 2 does not follow the format of the question, when the original question is answerable, we should start with 'Now we can answer the question: '",
+    "choice": 1
+}
+
+4. 
+Input: 
+Choice 1: 
+Question: Leah had 32 chocolates and her sister had 42. If they ate 35, how many pieces do they have left in total?
+sub-question 1: How many chocolates does Leah and his sister have in total?
+Answer 1: Leah has 32 chocolates and her sister has 42 chocolates. 32 + 42 = 74. The answer is 74.
+
+Choice 2: 
+Question: Leah had 32 chocolates and her sister had 42. If they ate 35, how many pieces do they have left in total?
+sub-question 1: How many chocolates does Leah and his sister have in total?
+Answer 1: Leah has 32 chocolates and her sister has 42 chocolates. 32 + 42 = 74. The answer is 74.
+
+
+
+Output: 
+{
+    "llm_response": "two choices are the same, so we choose one of them at random",
+    "choice": 1
+}
